@@ -1,0 +1,45 @@
+---
+title: "M02_activity"
+author: "Hannah Valenty"
+date: "2024-07-16"
+output: html_document
+---
+
+Task 1
+```{r}
+library(dplyr)
+library(ggplot2)
+OurData <- read.csv('ClassData.csv')
+head(OurData,5)
+```
+
+Task 2
+```{r}
+OurData2 <- OurData %>%
+  mutate(Slp=as.numeric(Sleep_Hrs), Phone_Hrs=as.numeric(Phone_Time))
+
+head(OurData2, 5)
+```
+
+Task 3
+```{r}
+ggplot(OurData2, aes(x=Phone_Hrs, y=Slp))+
+  geom_point()
+```
+There is no linear relationship that appears in the comparison between number of hours spent on the phone and sleep hours.
+
+Task 4
+```{r}
+t.test(OurData2$Phone_Hrs)
+```
+We are 95% confident that the mean number of hours UVA students spend on their phone is 4.12 with a confidence interval of (3.70, 4.53). 
+
+Task 5
+```{r}
+OurData3 <- OurData2 %>%
+  mutate(bfast=as.numeric(gsub('$', '', x=Bfast_Amount)))
+
+head(OurData3, 5)
+```
+
+

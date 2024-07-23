@@ -1,0 +1,54 @@
+---
+title: "M03_activity"
+author: "Hannah Valenty"
+date: "2024-07-17"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+df <- read.csv('WA_Marketing-Campaign.csv')
+```
+Task 1
+```{r}
+promotion3_data <- subset(df, Promotion==3)
+```
+1.A
+```{r}
+#Bootstrapping
+mean_calc <- function(x){
+  return(mean(x, na.rm = T))
+}
+
+boot_means <- replicate(1000, {
+boot_data <- sample(promotion3_data$SalesInThousands, replace = TRUE)
+mean_calc(boot_data)
+})
+
+quantile(boot_means, c(0.025, 0.975))
+```
+Bootstrap CI: (52.99, 57.81)
+
+Task 1.B
+```{r}
+t.test(df$SalesInThousands)
+```
+T test CI: (52.06, 54.87)
+Interpretation: We are 95% confident that for all restaurants that adopt promotion three, the mean sales in thousands of dollars is between 52.06 and 54.87.
+
+
+Task 1.C
+Bootstrap CI: 53.03780 57.85138 
+T test CI: 52.06025 54.87215
+
+The widths between the two tests are very similar and 
+
+Task 2
+```{r}
+promo_2_3 <- subset(df, Promotion==2 | Promotion==3)
+
+t.test(SalesInThousands~Promotion, data=promo_2_3)
+
+```
+We recommend using promotion three, because we are 95% confident that promo 3 will earn an average of 4.79 to 11.27 thousand more dollars than restaurants using promo 2.

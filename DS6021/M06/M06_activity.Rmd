@@ -1,0 +1,65 @@
+---
+title: "M06 Activity"
+author: "Hannah Valenty"
+date: "2024-07-22"
+output: html_document
+---
+Task 0
+```{r}
+library(tidyverse)
+lifedf <- read.csv('expectancy.csv')
+df <- select(lifedf, Life.expectancy, GDP) %>%
+  na.omit()
+```
+
+Task 1.A
+```{r}
+ggplot(df, aes(x=GDP, y=Life.expectancy))+
+  geom_point()
+```
+
+Task 1.B
+```{r}
+cor(x=df$GDP, y=df$Life.expectancy)
+```
+
+Task 1.C
+
+A linear model is not appropriate for predicting life expectancy using GDP.
+
+
+Task 2
+```{r}
+r <- cor(x=df$GDP, y=df$Life.expectancy)
+sx <- sd(df$GDP)
+sy <- sd(df$Life.expectancy)
+B_1 <- (r*sy/sx)
+B_0 <- mean(df$Life.expectancy) - B_1*mean(df$GDP)
+
+B_1
+B_0
+```
+
+
+
+Task 3
+```{r}
+model <- lm(Life.expectancy~GDP,data=df)
+coef(model)
+```
+
+
+Task 4.A
+```{r}
+des_matrix <- as.matrix(data.frame(rep(1, length(df$GDP)), df$GDP))
+```
+
+Task 4.B
+```{r}
+xtx <- t(des_matrix)%*%des_matrix
+inverse_xtx <- solve(xtx)
+xty <- t(des_matrix)%*%df$Life.expectancy
+beta <- inverse_xtx %*% xty
+beta
+```
+
