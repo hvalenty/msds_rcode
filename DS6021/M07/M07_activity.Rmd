@@ -1,0 +1,57 @@
+---
+title: "M07_activity"
+author: "Hannah Valenty"
+date: "2024-07-23"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+df <- read.csv('data/expectancy.csv')
+
+df3<-select(df,Life.expectancy, Adult.Mortality,
+infant.deaths,HIV.AIDS,BMI, GDP,Schooling)%>%
+na.omit()
+```
+
+Task 1.A
+```{r}
+des_matrix <- as.matrix(cbind(rep(1, 151), df3$Adult.Mortality,
+                                   df3$infant.deaths, df3$HIV.AIDS,
+                                   df3$BMI, df3$GDP, df3$Schooling))
+head(des_matrix)
+```
+
+Task 1.B
+```{r}
+xtx <- t(des_matrix)%*%des_matrix
+inverse_xtx <- solve(xtx)
+xty <- t(des_matrix)%*%df3$Life.expectancy
+beta <- inverse_xtx %*% xty
+beta
+```
+
+Task 2
+```{r}
+mod_df3 <- lm(Life.expectancy~Adult.Mortality + infant.deaths + HIV.AIDS +
+                BMI + GDP + Schooling, data=df3)
+coef(mod_df3)
+```
+
+Task 3
+```{r}
+boot_estimate <- replicate(10000,{
+boot_sam <- df3[sample(1:nrow(df3), nrow(df3), 
+                      replace=TRUE),]
+boot_model <- lm(Life.expectancy~Adult.Mortality + infant.deaths + HIV.AIDS +
+                BMI + GDP + Schooling, data=df3)
+coef(boot_model)
+})
+
+estm <- data.frame(t(boot_estimate))
+
+summarize(estm, mean_b0=mean(X.Intercept.), mean_b1=mean(Adult.Mortality),
+          mean_b2=mean(infant.deaths), mean_b3=mean(HIV.AIDS),
+          mean_b4=mean(BMI), mean_b5=mean(GDP), mean_b6=mean(Schooling))
+```
+
