@@ -1,0 +1,77 @@
+---
+title: "M08 Activity"
+author: "Hannah Valenty"
+date: "2024-07-24"
+output: html_document
+---
+
+Task 0
+```{r}
+library(tidyverse)
+import <- read.csv('data/expectancy.csv')
+df <- select(import,Life.expectancy, Adult.Mortality,
+infant.deaths,HIV.AIDS,BMI, GDP,Schooling)%>%
+na.omit()
+
+head(df)
+```
+
+Task 1
+```{r}
+long <- gather(df, key='predictor', value = 'value',
+               infant.deaths, Adult.Mortality, HIV.AIDS,
+               BMI, GDP, Schooling)
+
+ggplot(long, aes(x=value, y=Life.expectancy, color=predictor))+
+  geom_point()+
+  facet_wrap(~predictor, scales='free_x')
+```
+
+A linear model seems appropriate for predicting Life.expectancy using only the predictors Adult.Mortality, BMI, and Schooling. If the remaining predictors are transformed they could be considered for the model.
+
+
+Task 2
+```{r}
+mod1 <- lm(Life.expectancy~infant.deaths + Adult.Mortality + HIV.AIDS +
+               BMI + GDP + Schooling, data=df)
+
+df_pred <- mutate(df, predictions=fitted(mod1),
+                  resid=residuals(mod1))
+```
+
+Task 2.A: Linearity Assumption
+```{r}
+ggplot(long, aes(x=value, y=Life.expectancy, color=predictor))+
+  geom_point()+
+  facet_wrap(~predictor, scales='free_x')
+```
+
+Not all predictors satisfy the linearity assumption. Adult mortality, BMI, and Schooling show a linear relationship with the response variable (life expectancy). The remaining variables do not have a linear relationship.
+
+
+Task 2.B: Independence Assumption & Equal Variance Assumption
+```{r}
+ggplot(df_pred, aes(x=predictions, y=resid))+
+  geom_point()+
+  geom_hline(yintercept = 0, color='red')
+```
+
+The plot above shows a random pattern of the residuals and no patterns or clumping, which satisfies the independence assumption. Additionally, the equal variance assumption is met as there is no discernible pattern (like a cone), meaning the variability is consistent.
+
+
+Task 2.C: Normal Population Assumption
+```{r}
+ggplot(df_pred, aes(sample=resid))+
+  stat_qq()+
+  stat_qq_line(color='orange')
+```
+
+The QQ plot above shows the satisfaction of the normal population assumption. Most of the data points are located very close to the QQ fit line.
+
+
+Task 3
+```{r}
+summary(df)
+```
+
+The variable which will most benefit from a transformation is the GDP. This predictor has the greatest range in values from a minimum of 33.68 to a maximum of 66346.52. Additionally, when viewing the scatter plot between GDP and life expectancy, the shape is exponential rather than linear. A transformation would adjust this issue as well.
