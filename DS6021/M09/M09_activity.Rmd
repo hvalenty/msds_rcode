@@ -1,0 +1,58 @@
+---
+title: "M09_activity"
+author: "Hannah Valenty"
+date: "2024-07-25"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+df <- read.csv('data/credit_data.csv')
+head(df)
+```
+
+Task 1
+```{r}
+library(ggcorrplot)
+df2 <- df[2:7]
+cor_mat <- round(cor(df2), 2)
+ggcorrplot(cor_mat, lab=T, type='lower')
+```
+
+Yes, there appears to be a multicollinearity issue between limit and rating. They have a correlation of 1, which is well above the threshold of 0.8.
+
+
+Task 2
+```{r}
+library(car)
+mod0 <- lm(Balance~Income+Limit+Rating+Cards+Age+Education, data=df)
+coef(mod0)
+vif(mod0)
+```
+
+The largest VIF is Rating (229.49), the next model will remove this.
+
+```{r}
+mod1 <- lm(Balance~Income+Limit+Cards+Age+Education, data=df)
+coef(mod1)
+vif(mod1)
+```
+
+This rebuilt model is more appropriate, and has all VIF values between 1 and 3 (none over 5 and especially not over 10).
+
+
+Task 3.A: Prediction Interval
+```{r}
+df2 <- data.frame(Income=65, Limit=6000, Cards=4,
+                  Age=60, Education=10)
+
+predict(mod1, newdata=df2, interval='prediction', level=0.95)
+```
+With the input predictor values used for the model, the predicted Balance value has a predicted interval between 396.1612 and 1038.811, with 95% confidence. 
+
+
+Task 3.B: Confidence Interval
+```{r}
+predict(mod1, newdata=df2, interval='confidence', level=0.95)
+```
+We are 95% confident that the mean predicted Balance value given the input predictor values will fall within a confidence interval of 689.5073 and 745.4653. This is affirming because the interval is smaller than the predicted interval using the same parameters. 
