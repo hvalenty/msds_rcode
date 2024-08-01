@@ -1,6 +1,6 @@
 # 7/18/24
 
-ct <- read.csv('Clinical_trial.csv')
+ct <- read.csv('data/Clinical_trial.csv')
 anova <- aov(Pain_Rating~Drug, data=ct)
 summary(anova)
 # at least one of the mean pain ratings are different

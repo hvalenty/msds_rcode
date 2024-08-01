@@ -1,6 +1,6 @@
 # 7/22/24
 library(tidyverse)
-df <- read.csv('Startups.csv')
+df <- read.csv('data/Startups.csv')
 
 ggplot(df, aes(x=R.D.Spend, y=Profit))+
   geom_point()+

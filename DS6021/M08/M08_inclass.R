@@ -81,8 +81,8 @@ predict(mod3, new, interval='prediction')
 
 ggplot(df, aes(x=R.D.Spend, y=Profit))+
   geom_point()+
-  geom_smooth(method='lm', se=F)+
-  geom_hline(yintercept = Avg_profit)
+  geom_smooth(method='lm', se=F)
+  #geom_hline(yintercept = Avg_profit)
 
 summary(mod0)
 sqrt(0.9465)
@@ -100,8 +100,9 @@ ggcorrplot(cor_mat, lab=T, type='lower')
 
 ggcorrplot(cor_mat, lab=T, type='lower', method='circle')
 
-mod10 <- lm(Profit~R.D.Spend+Administration+Marketing.Spend, data=df)
+mod10 <- lm(Profit~R.D.Spend+Administration, data=df)
 coef(mod10)
+summary(mod10)
 
 install.packages('car')
 library(car)

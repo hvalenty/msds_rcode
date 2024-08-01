@@ -1,0 +1,65 @@
+---
+title: "M12 Activity"
+author: "Hannah Valenty"
+date: "2024-07-31"
+output: html_document
+---
+
+```{r}
+st <- read.csv('data/Startups.csv')
+head(st)
+```
+
+## Task 1
+```{r}
+mod_state <- lm(Profit~State, data = st)
+summary(mod_state)
+```
+Model Equation: $\hat{Profit} = 103905 + 14869 * I_{Florida} + 9851 * I_{New York}$
+
+
+## Task 2.A -- No Interaction
+```{r}
+library(ggplot2)
+ggplot(st, aes(x=R.D.Spend, y=Profit, colour = State))+
+  geom_jitter()+
+  geom_smooth(method='lm', aes(group=State), se=F)
+```
+
+## Task 2.B
+```{r}
+mod_state_rd <- lm(Profit~State+R.D.Spend, data = st)
+summary(mod_state_rd)
+```
+Model Equation: $\hat{Profit} = 48750 + 0.853*R.D.Spend + 1164*I_{Florida} + 9.597 * I_{New York}$
+
+## Task 2.C
+
+The coefficient of the State of Florida can be interpreted as, Florida start ups making $1164 more than start ups in California when spending nothing on R& D. 
+
+## Task 3.A -- With Interaction
+```{r}
+mod_inter <- lm(Profit~State*R.D.Spend, data = st)
+summary(mod_inter)
+```
+Model Equation: $\hat{Profit} = 43880 + 0.9284 * R.D.Spend + 9242 * I_{Florida} + 7921 * I_{New York} - 0.1151 * R.D.Spend * I_{Florida} - 0.1153 * R.D.Spend * I_{New York}$
+
+## Task 3.B
+
+* Florida:R.D.Spend coefficient: Every change in R&D for start ups in Florida has a higher average Profit from start ups in California by 0.9284 - 0.1151 (0.8133).
+
+* New York:R.D.Spend coefficient: Every change in R&D for start ups in Florida has a higher average Profit from start ups in California by 0.9284 - 0.1153 (0.8131).
+
+
+## Task 4
+```{r}
+st$State <- factor(st$State, level = c('Florida','New York','California'))
+# Florida reference
+mod_inter <- lm(Profit~State*R.D.Spend, data = st)
+summary(mod_inter)
+# New York reference
+st$State <- factor(st$State, level = c('New York','Florida','California'))
+mod_inter <- lm(Profit~State*R.D.Spend, data = st)
+summary(mod_inter)
+```
+State does not seem to be a useful predictor of Profit. For each iteration of State reference variables the state p-values all fall above 0.05. It would be best to remove state from the model.

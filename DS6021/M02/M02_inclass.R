@@ -1,7 +1,7 @@
 library(dplyr)
 library(ggplot2)
 
-df <- read.csv('ClassData.csv')
+df <- read.csv('data/ClassData.csv')
 
 df <- df %>%
   mutate(Slp=as.numeric(Sleep_Hrs))
