@@ -1,0 +1,97 @@
+---
+title: "M13 Activity"
+author: " Courtney Hodge & Hannah Valenty"
+date: "2024-08-01"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+df <- read.csv('data/expectancy.csv')
+df2 <- select(df, Life.expectancy, Status, Adult.Mortality,
+        infant.deaths,HIV.AIDS,BMI, GDP,Schooling)%>%
+        na.omit()
+```
+
+## Task 1
+```{r}
+mod0 <- lm(Life.expectancy~., data = df2)
+summary(mod0)
+aic <- MASS::stepAIC(mod0, direction='both', Trace=FALSE)
+summary(aic)
+```
+Make a new model only using Adult Mortality, HIV/AIDS, and Schooling. Check mulitcolliniarity across this new model.
+
+```{r}
+library(car)
+mod1 <- lm(Life.expectancy~Adult.Mortality+HIV.AIDS+Schooling, data = df2)
+summary(mod1)
+vif(mod1)
+```
+Now cross validate using by 10 fold.
+
+```{r}
+library(caret)
+control <- trainControl(method = 'cv', number = 10)
+
+mod2 <- train(Life.expectancy~Adult.Mortality+HIV.AIDS+Schooling, method='lm', trControl=control, data=df2)
+summary(mod2)
+mod2$results$RMSE
+```
+The RMSE of the model for 10 folds is 3.386653.
+
+## Task 2
+```{r}
+# select row to predict on
+prediction <- df2[1,]
+pred_with_mod <- predict(mod2, prediction)
+
+# find residual with difference of actual - predicted
+residual <- prediction$Life.expectancy - pred_with_mod 
+residual
+```
+The residual of our prediction using the first row of the original data is 1.078414.
+
+## Task 3.A
+```{r}
+library(broom)
+# same parameters but with lm() function model
+
+diag <- mod1 %>%
+  augment(data=df2)
+head(diag)
+# -- influential
+infl <- filter(diag, .cooksd > 4/nrow(df2))
+infl
+```
+The influential points are listed above within the 'infl' variable, there were 57 points identified.
+
+Now remove these points and rebuild the model.
+```{r}
+# new data
+no_infl <- anti_join(df2, infl)
+
+control <- trainControl(method = 'cv', number = 10)
+
+mod3 <- train(Life.expectancy~Adult.Mortality+HIV.AIDS+Schooling, method='lm', trControl=control, data=no_infl)
+summary(mod3)
+```
+
+
+## Task 3.B
+```{r}
+mod3$results$RMSE
+```
+The RMSE of the model based on a 10-fold cross-validation is valued at 1.474635.
+
+## Task 3.C
+```{r}
+# same prediction value but with new model
+prediction <- df2[1,]
+pred_with_mod3 <- predict(mod3, prediction)
+
+# find residual with difference of actual - predicted
+residual_mod3 <- prediction$Life.expectancy - pred_with_mod3 
+residual_mod3
+```
+The residual for the new model using the same point as in question 2 is valued at 1.530593. This compares to the original residual value which is 1.078414. The difference between the original model with influence points and the new model without the points is 0.452179. 

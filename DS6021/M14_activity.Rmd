@@ -1,0 +1,88 @@
+---
+title: "M14 Activity"
+author: "Hannah Valenty"
+date: "2024-08-02"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+df <- read.csv('data/expectancy.csv')
+df2 <- select(df, Life.expectancy, Status, Adult.Mortality, infant.deaths,HIV.AIDS,BMI, GDP,Schooling) %>%
+na.omit()
+head(df2)
+```
+
+## Task 1
+```{r}
+# Model from previous activity
+mod1 <- lm(Life.expectancy~Adult.Mortality+HIV.AIDS+Schooling, data = df2)
+summary(mod1)
+```
+The adjusted R-squared value of this model is 0.8354.
+
+
+## Task 2.A -- Ridge Regression
+```{r}
+library(glmnet)
+X <- model.matrix(Life.expectancy~0+., data=df2)
+y <- df2$Life.expectancy
+# alpha picks either squared penalty or abs penalty
+# model
+rmod <- glmnet(x=X,y=y, alpha=0) # ridge
+# cross validate within mode
+rmodcv <- cv.glmnet(x=X,y=y, alpha=0, nfolds=10, set.seed(1)) # ridge
+```
+
+
+## Task 2.B
+```{r}
+rmodcv$lambda.1se
+```
+The one standard error lambda for a 10 fold cross validation is 3.556772 for this model.
+
+
+## Task 2.C
+```{r}
+# model plot
+plot(rmod, label=T, xvar='lambda')+abline(v=log(rmodcv$lambda.1se))
+# CV model plot
+plot(rmodcv)+abline(v=log(rmodcv$lambda.1se))
+```
+
+## Task 2.D
+```{r}
+rmodfit <- glmnet(x=X,y=y, alpha=0, lambda=rmodcv$lambda.min)
+rmodfit$dev.ratio
+```
+Compared to question 1 the ridge regression plot has a slightly higher r-squared value at 0.8412157 compared to the adjusted r-squared of 0.8354 above. The ridge regression keeps all parameters in the model, however it places the most weight on four parameters, with the higher coefficients. These four parameters would be selected when the lambda is a minimum as shown by the vertical line. The model in question 1 only has three parameters with difference from the ridge regression.
+
+
+## Task 3.A -- lasso regression
+```{r}
+X <- model.matrix(Life.expectancy~0+., data=df2)
+y <- df2$Life.expectancy
+# alpha picks either squared penalty or abs penalty
+# model
+rmod_lasso <- glmnet(x=X,y=y, alpha=1) # lasso
+# cross validate within mode
+rmodcv_lasso <- cv.glmnet(x=X,y=y, alpha=1, nfolds=10, set.seed(1)) # lasso
+```
+
+## Task 3.B
+```{r}
+rmodcv_lasso$lambda.1se
+```
+The one standard error lambda for a 10 fold cross validation is 1.036818 for this model.
+
+
+## Task 3.C
+```{r}
+plot(rmod_lasso, label=T, xvar='lambda')+abline(v=log(rmodcv_lasso$lambda.1se))
+
+plot(rmodcv_lasso)+abline(v=log(rmodcv_lasso$lambda.1se))
+```
+
+
+## Task 3.D
+Based on the lambda coefficient plot for the lasso model, it appears the parameters chosen for a 1 standard deviation lambda would correspond to parameters 5 and 8. Which are the variables HIV.AIDS and Schooling. The variable Status could also be considered, as the StatusDeveloped feature has the next highest coefficient and the only other essentially non-zero value.
